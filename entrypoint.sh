@@ -13,6 +13,7 @@ for d in lib/plugins lib/tpl conf; do
     cd -
 done
 
+mkdir -p /data/data
 ln -s /data/data /var/www/data
 if [ -z "$(ls -A /data/data)" ]; then
     cp -R /var/www/data.dist/* /data/data/
