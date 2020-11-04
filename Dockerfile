@@ -44,10 +44,10 @@ RUN apk --update --no-cache add \
   && rm -rf /root/.gnupg /tmp/* /var/cache/apk/* \
   && mkdir /data \
   && cd /var/www \
-  && mv lib/plugins lib/plugins.dist \
-  && mv lib/tpl lib/tpl.dist \
-  && mv conf conf.dist \
-  && mv data data.dist
+  && mv lib/plugins lib/plugins.bundled \
+  && mv lib/tpl lib/tpl.bundled \
+  && mv conf conf.bundled \
+  && mv data data.bundled
 
 COPY entrypoint.sh /sbin/
 RUN chmod +x /sbin/entrypoint.sh
@@ -59,3 +59,4 @@ VOLUME ["/data"]
 
 ENTRYPOINT ["/sbin/entrypoint.sh"]
 
+HEALTHCHECK CMD curl --fail http://localhost/doku.php || exit 1
