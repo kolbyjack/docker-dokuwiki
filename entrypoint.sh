@@ -1,7 +1,7 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 
 cd /var/www
-for d in lib/plugins lib/tpl conf data; do
+for d in lib/plugins lib/tpl conf; do
     mkdir -p /data/$d
     ln -s /data/$d $d
     cd $d.dist
@@ -12,6 +12,11 @@ for d in lib/plugins lib/tpl conf data; do
     done
     cd -
 done
+
+ln -s /data/data /var/www/data
+if [ -z "$(ls -A /data/data)" ]; then
+    cp -R /var/www/data.dist/* /data/data/
+fi
 chown -R nobody /data
 
 mkdir /run/nginx
