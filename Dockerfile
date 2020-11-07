@@ -1,7 +1,7 @@
 FROM alpine:latest
 
-ENV DOKUWIKI_VERSION="2016-06-26" \
-  DOKUWIKI_MD5="08f65b37c7a423172306804932bf4823"
+ENV DOKUWIKI_VERSION="2016-06-26a" \
+  DOKUWIKI_MD5="9b9ad79421a1bdad9c133e859140f3f2"
 
 RUN apk --update --no-cache add \
     curl \
