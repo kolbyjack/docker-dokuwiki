@@ -21,16 +21,12 @@ function link_entry()
 
     if [ -h "$link_path" ]; then
         true # Do nothing
-    elif [ -d "$target_path" ]; then
-        if [ -d "$link_path" ]; then
-            for e in "$target_path"/*; do
-                link_entry "$e" "$link_path/$( basename "$e" )"
-            done
-        else
-            ln -s "$target_path" "$link_path"
-        fi
-    else
+    elif [ ! -d "$target_path" ] || [ ! -d "$link_path" ]; then
         ln -s "$target_path" "$link_path"
+    else
+        for e in "$target_path"/*; do
+            link_entry "$e" "$link_path/$( basename "$e" )"
+        done
     fi
 }
 
