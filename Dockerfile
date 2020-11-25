@@ -49,10 +49,14 @@ RUN apk --update --no-cache add \
   && mv conf conf.bundled \
   && mv data data.bundled
 
+RUN adduser -u 82 -D -S -G www-data www-data
+
 COPY entrypoint.sh /sbin/
 RUN chmod +x /sbin/entrypoint.sh
 
-COPY default.conf /etc/nginx/conf.d/
+COPY nginx-vhost.conf /etc/nginx/conf.d/default.conf
+
+COPY php-pool.conf /etc/php7/php-fpm.d/www.conf
 
 EXPOSE 80
 VOLUME ["/data"]

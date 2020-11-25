@@ -1,9 +1,10 @@
 #!/bin/sh -e
 
-function link_entry()
+link_entry()
 {
     local target_path="$1"
     local link_path="$2"
+    local e
 
     if [ ! -e "$target_path" ]; then
         return
@@ -15,7 +16,7 @@ function link_entry()
 
     case "$target_path" in
     *.bundled)
-        link_path="$( dirname "$2" )/$( basename "$2" .bundled )"
+        link_path="$( dirname "$link_path" )/$( basename "$link_path" .bundled )"
         ;;
     esac
 
@@ -30,8 +31,10 @@ function link_entry()
     fi
 }
 
-function remove_stale_symlinks()
+remove_stale_symlinks()
 {
+    local e
+
     for e in "$1"/*; do
         if [ -h "$e" ] && [ ! -e "$e" ]; then
             rm "$e"
@@ -62,7 +65,7 @@ done
 remove_stale_symlinks /data
 
 # Make sure everything is writable by php
-chown -R nobody:nobody /data
+chown -R www-data:www-data /data
 
 mkdir /run/nginx
 nginx
