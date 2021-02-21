@@ -67,7 +67,7 @@ remove_stale_symlinks /data
 # Make sure everything is writable by php
 chown -R www-data:www-data /data
 
-mkdir /run/nginx
+mkdir -p /run/nginx
 nginx
 
 php-fpm7 -F
