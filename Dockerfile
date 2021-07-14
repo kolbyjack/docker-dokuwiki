@@ -1,7 +1,11 @@
 FROM alpine:latest
 
 ENV DOKUWIKI_VERSION="2017-02-19g" \
-  DOKUWIKI_MD5="81854e53fb0def5c5c957723d9eb3a4d"
+  DOKUWIKI_MD5="81854e53fb0def5c5c957723d9eb3a4d" \
+  S6_OVERLAY_VERSION="2.2.0.3" \
+  S6_ARCH=amd64 \
+  S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
+  S6_CMD_WAIT_FOR_SERVICES=1
 
 RUN apk --update --no-cache add \
     curl \
@@ -34,25 +38,28 @@ RUN apk --update --no-cache add \
     tar \
     tzdata \
   && rm -rf /tmp/* /var/cache/apk/* /var/www/* \
-  && mkdir -p /var/www \
-  && apk --update --no-cache add -t build-dependencies gnupg wget \
+  \
   && cd /tmp \
-  && wget -q "https://download.dokuwiki.org/src/dokuwiki/dokuwiki-$DOKUWIKI_VERSION.tgz" \
-  && echo "$DOKUWIKI_MD5  /tmp/dokuwiki-$DOKUWIKI_VERSION.tgz" | md5sum -c - | grep OK \
+  && curl -L -O -s "https://download.dokuwiki.org/src/dokuwiki/dokuwiki-$DOKUWIKI_VERSION.tgz" \
+  && echo "$DOKUWIKI_MD5  /tmp/dokuwiki-$DOKUWIKI_VERSION.tgz" | md5sum -c - -s \
   && tar -xzf "dokuwiki-$DOKUWIKI_VERSION.tgz" --strip 1 -C /var/www \
-  && apk del build-dependencies \
-  && rm -rf /root/.gnupg /tmp/* /var/cache/apk/* \
-  && mkdir /data \
+  && rm -rf /tmp/* /var/cache/apk/* \
+  \
+  && curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz" | tar -xzf - -C / \
+  \
+  && mkdir -p /data /etc/fix-attrs.d /etc/services.d/nginx /etc/services.d/php7 /var/www \
+  \
   && cd /var/www \
   && mv lib/plugins lib/plugins.bundled \
   && mv lib/tpl lib/tpl.bundled \
   && mv conf conf.bundled \
-  && mv data data.bundled
+  && mv data data.bundled \
+  \
+  && adduser -u 82 -D -S -G www-data www-data \
+  && echo -e '#!/usr/bin/execlineb -P\nnginx -g "daemon off;"' > /etc/services.d/nginx/run\
+  && echo -e '#!/usr/bin/execlineb -P\nphp-fpm7 -F' > /etc/services.d/php7/run
 
-RUN adduser -u 82 -D -S -G www-data www-data
-
-COPY entrypoint.sh /sbin/
-RUN chmod +x /sbin/entrypoint.sh
+COPY init-data /etc/cont-init.d/01-init-data
 
 COPY nginx-vhost.conf /etc/nginx/conf.d/default.conf
 
@@ -61,6 +68,6 @@ COPY php-pool.conf /etc/php7/php-fpm.d/www.conf
 EXPOSE 80
 VOLUME ["/data"]
 
-ENTRYPOINT ["/sbin/entrypoint.sh"]
+ENTRYPOINT ["/init"]
 
 HEALTHCHECK CMD curl --fail http://localhost/doku.php || exit 1
