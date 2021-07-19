@@ -1,0 +1,29 @@
+---
+image: docker:latest
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_HUB_IMAGE: "$DOCKER_HUB_USER/dokuwiki"
+
+services:
+  - docker:dind
+
+before_script:
+  - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
+  - docker info
+
+build-master:
+  stage: build
+  script:
+    - docker build -t "$DOCKER_HUB_IMAGE:latest" .
+    - docker push "$DOCKER_HUB_IMAGE:latest"
+  only:
+    - master
+
+build-release:
+  stage: build
+  script:
+    - docker build -t "$DOCKER_HUB_IMAGE:$( basename "$CI_COMMIT_BRANCH" )" .
+    - docker push "$DOCKER_HUB_IMAGE:$( basename "$CI_COMMIT_BRANCH" )"
+  only:
+    - /^releases\/.*/
