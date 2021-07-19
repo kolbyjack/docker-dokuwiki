@@ -3,14 +3,12 @@ image: docker:latest
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_HUB_IMAGE: "$DOCKER_HUB_USER/dokuwiki"
 
 services:
   - docker:dind
 
 before_script:
-  - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
-  - docker info
+  - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_TOKEN"
 
 build-master:
   stage: build
